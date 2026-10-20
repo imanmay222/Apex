@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   Design tokens — Apex Care Technologies
+   Brand: deep industrial blue + safety orange
+---------------------------------------------------------------- */
+@theme {
+  --color-brand-50: #eef5ff;
+  --color-brand-100: #d9e8ff;
+  --color-brand-200: #bcd7ff;
+  --color-brand-300: #8ebeff;
+  --color-brand-400: #599bff;
+  --color-brand-500: #3377fb;
+  --color-brand-600: #1d57ef;
+  --color-brand-700: #1643dc;
+  --color-brand-800: #0b4ba2;
+  --color-brand-900: #0d3579;
+  --color-brand-950: #0a2150;
+
+  --color-safety-50: #fff4ed;
+  --color-safety-100: #ffe5d4;
+  --color-safety-200: #ffc7a8;
+  --color-safety-300: #ffa070;
+  --color-safety-400: #ff6d37;
+  --color-safety-500: #ee4a24;
+  --color-safety-600: #df2f0b;
+  --color-safety-700: #b9200c;
+  --color-safety-800: #931c12;
+  --color-safety-900: #771a12;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), var(--font-inter), ui-sans-serif, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Semantic surface tokens — light */
+:root {
+  --background: #ffffff;
+  --surface: #f7f9fc;
+  --surface-raised: #ffffff;
+  --foreground: #0d1526;
+  --muted: #5b6880;
+  --border: #e3e8f0;
+  --ring: var(--color-brand-800);
+}
+
+/* Semantic surface tokens — dark */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #060b16;
+    --surface: #0b1424;
+    --surface-raised: #111c31;
+    --foreground: #e8edf7;
+    --muted: #93a1ba;
+    --border: #1d2b45;
+    --ring: var(--color-brand-400);
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #060b16;
+  --surface: #0b1424;
+  --surface-raised: #111c31;
+  --foreground: #e8edf7;
+  --muted: #93a1ba;
+  --border: #1d2b45;
+  --ring: var(--color-brand-400);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-safety-500);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Page gutter — never lets content touch the viewport edge */
+  .shell {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    max-width: 80rem;
+  }
+
+  @media (min-width: 640px) {
+    .shell {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  .shell-wide {
+    max-width: 96rem;
+  }
+
+  /* Small uppercase label that sits above a section heading */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-safety-500);
+  }
+}
+
+/* ---------------------------------------------------------------
+   Scroll reveal — replaces the old AOS library
+---------------------------------------------------------------- */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal {
+  animation: reveal-up 0.7s var(--ease-out-expo) both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 22%;
+}
+
+@supports not (animation-timeline: view()) {
+  .reveal {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Infinite logo marquee */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}

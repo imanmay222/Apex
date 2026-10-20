@@ -1,0 +1,55 @@
+# OPTIONAL: a containerised production-style deployment (MongoDB with authentication + the app).
+#
+# Day-to-day development does NOT need Docker: run `npm run dev:all`. See README.md.
+#
+#   docker compose up --build        ->  http://localhost:3001
+#   then seed once from your machine (MongoDB is published on loopback port 27018):
+#     MONGODB_URI='mongodb://apex_app:<MONGO_APP_PASSWORD>@127.0.0.1:27018/apex?authSource=apex' npm run seed
+#
+# Uses the secrets in .env (MONGO_*, SESSION_SECRET, ADMIN_*, …). Note: this path has been
+# written but not exercised end-to-end on the machine this project was built on.
+
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.5"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_APP_DB}
+      MONGO_APP_DB: ${MONGO_APP_DB}
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+      # Creates a least-privilege user on first start so the app never connects as root.
+      - ./docker/mongo/init-app-user.sh:/docker-entrypoint-initdb.d/init-app-user.sh:ro
+    ports:
+      - "127.0.0.1:27018:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      target: runner
+    image: apex-web:prod
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Container-network overrides of the localhost values in .env
+      MONGODB_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/${MONGO_APP_DB}?authSource=${MONGO_APP_DB}
+      SMTP_HOST: ${SMTP_HOST_DOCKER:-}
+    ports:
+      - "3001:3000"
+
+volumes:
+  mongo_data:

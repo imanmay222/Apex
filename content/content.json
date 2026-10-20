@@ -1,0 +1,177 @@
+{
+  "siteSettings": {
+    "companyName": "Apex Care Technologies",
+    "tagline": "Industrial Safety Equipment: Fire, Safety, Welding & Hardware",
+    "since": 2022,
+    "phones": ["+91 87927 83208", "+91 88705 42533", "04142-453571"],
+    "whatsapp": "918792783208",
+    "address": "Plot No 13, Sri Lakshmi Saraswathi Nagar, Arisiperiyankuppam, Cuddalore, Tamil Nadu, India - 607401",
+    "mapEmbedQuery": "Apex Care Technologies, Cuddalore",
+    "googleMapsLink": "https://maps.app.goo.gl/s9WeuPugRNU4Yozj9",
+    "social": {
+      "facebook": "https://www.facebook.com/people/Apex-care-technologies/61564431135629/",
+      "instagram": "https://www.instagram.com/apex_care_technologies2022/",
+      "whatsapp": "https://api.whatsapp.com/send?phone=918792783208&text=Hi%20"
+    },
+    "certificates": {
+      "gstin": "33BUVPS9623R1ZB",
+      "msme": "UDYAM-TN-04-0028119",
+      "iec": "BUVPS9623R"
+    },
+    "team": {
+      "totalMembers": 16,
+      "leadership": [
+        { "name": "Mrs. N. Selvarani", "qualification": "B.Pharm.", "role": "Proprietor" },
+        { "name": "K. Ajithkumar", "qualification": "M.E. (Safety)", "role": "Managing Director" },
+        { "name": "Dr. A. Raguraman", "qualification": "M.Sc, M.Phil, B.Ed, Ph.D", "role": "Quality Controller" }
+      ]
+    },
+    "infrastructure": "Two-floor warehouse in Cuddalore, Tamil Nadu",
+    "originalNote": "email addresses on live site are Cloudflare-obfuscated (rendered client-side) - need real addresses from user before wiring contact form"
+  },
+  "navigation": ["Home", "About us", "Survey", "Products", "Training & Demo", "Contact us"],
+  "productCategories": [
+    {
+      "slug": "head-protection", "title": "Head Protection", "sourceImage": "products/head-production.png"
+    },
+    { "slug": "eye-protection", "title": "Eye Protection", "sourceImage": "products/eye-production.png" },
+    { "slug": "ear-protection", "title": "Ear Protection", "sourceImage": "products/ear-production.png" },
+    { "slug": "respiratory-protection", "title": "Respiratory Protection", "sourceImage": "products/respiratory-production.png" },
+    { "slug": "hand-protection", "title": "Hand Protection", "sourceImage": "products/hand-production.png" },
+    { "slug": "body-protection", "title": "Body Protection", "sourceImage": "products/body-production.png" },
+    { "slug": "foot-protection", "title": "Foot Protection", "sourceImage": "products/foot-production.png" },
+    { "slug": "first-aid", "title": "First Aid", "sourceImage": "products/first-aid.png" },
+    { "slug": "fall-protection", "title": "Fall Protection, Accessories & Ladder", "sourceImage": "products/fall-protection.png" },
+    { "slug": "arc-safety", "title": "Arc Safety", "sourceImage": "products/arc-safety.png" },
+    { "slug": "safety-jackets", "title": "Safety Jackets", "sourceImage": "products/safety-jackets.png" },
+    { "slug": "disposable-product", "title": "Disposable Product", "sourceImage": "products/disposable-product.png" },
+    {
+      "slug": "draeger-respiratory-sensor", "title": "Draeger Respiratory Production & Sensor Product",
+      "isFeaturedBrandSection": true,
+      "products": [
+        { "name": "Draeger X-plore 8000 PAPR", "sourceImage": "products/x-plore-8700.png" },
+        { "name": "Draeger Polytron 7000", "sourceImage": "products/polytron-7000.png" },
+        { "name": "Draeger Alcotest 5000", "sourceImage": "products/alcotest-5000.png" },
+        { "name": "Draeger PAC 6500", "sourceImage": "products/pac-6500.png" },
+        { "name": "Draeger Polytron 5200 CAT", "sourceImage": "products/polytron-5200-cat.png" },
+        { "name": "Draeger X-am 2500", "sourceImage": "products/x-am-2500.png" }
+      ]
+    },
+    { "slug": "air-respirator-unit", "title": "Air Respirator Unit", "sourceImage": "products/air-respirator-unit.png" },
+    { "slug": "breathing-apparatus-box", "title": "Breathing Apparatus Box", "sourceImage": "products/breathing-apparatus.png" },
+    { "slug": "scba", "title": "Self Contained Breathing Apparatus", "sourceImage": "products/scba.png" },
+    { "slug": "fire-protection", "title": "Fire Protection", "sourceImage": "products/fire-production.png" },
+    { "slug": "chemical-protection", "title": "Chemical Protection", "sourceImage": "products/chemical-production.png" },
+    { "slug": "traffic-road-safety", "title": "Traffic & Road Safety", "sourceImage": "products/traffic-road-safety.png" },
+    { "slug": "safety-shower", "title": "Safety Shower", "sourceImage": "products/safety-shower.png" },
+    { "slug": "torch-sound-detection", "title": "Torch & Sound Detection", "sourceImage": "products/torch-sound-detection.png" },
+    { "slug": "security", "title": "Security", "sourceImage": "products/security.png" },
+    { "slug": "lockout-tagout", "title": "Lock Out & Tag Out", "sourceImage": "products/lockout-tagout.png" },
+    { "slug": "fire-extinguisher", "title": "Fire Extinguisher", "sourceImage": "products/fire-extinguisher.png" },
+    { "slug": "spill-kit-blankets", "title": "Spill Kit - Blankets", "sourceImage": "products/spillkit-blankets.png" },
+    { "slug": "anti-static-products", "title": "Anti Static Products", "sourceImage": "products/anti-static-products.png" },
+    { "slug": "anti-slip-tape", "title": "Anti Slip Tape", "sourceImage": "products/anti-slip-tape.png" },
+    { "slug": "gas-detectors", "title": "Gas Detectors (Alcohol / Sound / PH / DTS Meter)", "sourceImage": "products/sensor-devices.png" },
+    { "slug": "raincoat", "title": "Raincoat", "sourceImage": "products/versalis-raincoat.png" },
+    { "slug": "safety-signages", "title": "Safety Signages", "sourceImage": "products/safety-signages.png" },
+    { "slug": "automatic-panel-protection", "title": "Automatic Panel Protection", "sourceImage": "products/automatic-panel-protection.png" },
+    { "slug": "automatic-room-protection", "title": "Automatic Room Protection", "sourceImage": "products/automatic-room-protection.png" },
+    { "slug": "kitchen-hood-protection", "title": "Kitchen Hood Protection", "sourceImage": "products/kitchen-hood-protection.png" },
+    { "slug": "fire-suppression-system", "title": "Fire Suppression System", "sourceImage": "products/fire-suppression-system.png" }
+  ],
+  "homeFeaturedCategories": ["head-protection", "eye-protection", "ear-protection", "respiratory-protection", "hand-protection", "body-protection", "foot-protection", "traffic-road-safety", "gas-detectors"],
+  "surveys": [
+    {
+      "slug": "gas-detection-system-survey",
+      "title": "Gas Detection System",
+      "image": "survey/survey-1.jpg",
+      "description": "Each industry and application come with their own specific requirements, challenges, and legal regulations, making it essential for gas detection systems to be tailored to each individual site. A solution that works perfectly for one facility may not be suitable for another, which is why we don't offer off-the-shelf products. Instead, we begin by discussing your precise needs through a detailed consultation process. Our experts will then design a system that is not too large or too small, but just right for your requirements, ensuring that it remains both reliable and compliant with industry standards."
+    },
+    {
+      "slug": "scba",
+      "title": "Self-Contained Breathing Apparatus",
+      "shortTitle": "SCBA",
+      "image": "survey/survey-2.jpg",
+      "description": "Proper maintenance of SCBA sets is critical to ensure they are ready for immediate use in emergencies. Timely service and maintenance activities such as refilling air cylinders, performing hydrostatic testing, conducting weight-based and pressure-based content checks, and renewing or repairing valves are essential. Regular inspections and external maintenance work ensure that SCBA equipment operates at full efficiency and remains reliable when it's needed most in emergency situations. We ensure all of these aspects are handled meticulously, giving you peace of mind."
+    },
+    {
+      "slug": "gas-detection-calibration",
+      "title": "Gas Detection Calibration",
+      "image": "survey/survey-3.jpg",
+      "description": "Calibration is a crucial process to ensure that your gas detection equipment remains accurate and dependable. We offer on-site calibration and certification services for both portable gas detectors and fixed gas detection systems. Our extensive inventory of calibration gas cylinders allows us to carry out on-board testing, ensuring that your equipment is functioning correctly. Additionally, we provide spare parts and repair services, ensuring that your systems are maintained at peak performance throughout their service life."
+    },
+    {
+      "slug": "road-safety-traffic-products",
+      "title": "Road Safety & Traffic Products",
+      "image": "survey/survey-4.jpg",
+      "description": "Ensuring road safety within your facility is of paramount importance, and we are here to help you implement effective safety measures. Our team conducts comprehensive site assessments to determine the optimal locations for installing speed breakers, road studs, traffic signage, convex mirrors, and road crossing marks. We take the time to evaluate your specific needs and then provide tailored recommendations that enhance the safety and traffic flow in your plant. Our expert guidance ensures that the installation of these products is carried out in a way that maximizes their impact on safety."
+    },
+    {
+      "slug": "fit-testing",
+      "title": "Fit Testing",
+      "image": "survey/survey-5.jpg",
+      "description": "Fit testing is a crucial part of ensuring that respiratory protective equipment fits properly and provides the necessary protection. We offer both quantitative and qualitative fit testing services. The quantitative method, which uses advanced equipment like PortaCount (TSI USA) or SE POHD pressure sensors, measures the fit with precision. For qualitative fit testing, we use irritant smoke—an OSHA-approved method that provides an accurate assessment of mask fit without relying on subjective responses. These tests are essential for ensuring that respirators, particularly P100 or FFP3 class models, offer the protection needed in hazardous environments."
+    },
+    {
+      "slug": "height-safety",
+      "title": "Height Safety",
+      "image": "survey/survey-6.jpg",
+      "description": "Working at height presents significant risks, and effective planning and safety measures are critical to minimize these dangers. Our services include conducting detailed risk assessments for work-at-height activities, ensuring that all work is planned, organized, and carried out by competent professionals. We help identify the right equipment and collective safety measures, such as guardrails and working platforms, to prevent falls. When other measures are necessary, we also advise on fall-arrest solutions using personal protective equipment. Our approach ensures that all work at height is performed safely and in accordance with regulatory guidelines."
+    },
+    {
+      "slug": "safety-shower-maintenance",
+      "title": "Safety Showers",
+      "image": "survey/survey-7.jpg",
+      "description": "The functionality of safety showers and eye washes is essential in emergencies, and regular maintenance is required to ensure they are in good working order. We recommend performing weekly activation checks and documenting them to maintain a full history as per standard requirements. Additionally, a visual inspection of all equipment, including shower heads, nozzles, and diffusers, should be conducted to prevent debris or bacteria build-up. If the equipment includes electrical components, regular inspections for damage should also be performed. These steps ensure that your safety showers are always operational when needed most."
+    },
+    {
+      "slug": "lockout-tagout",
+      "title": "Lockout Tagout",
+      "image": "survey/survey-8.jpg",
+      "description": "A proper Lockout Tagout (LOTO) system is essential to protect workers from hazardous energy sources during maintenance and repair activities. Our team conducts thorough site surveys to identify energy sources and associated hazards, following OSHA standards and guidelines. Based on this survey, we provide recommendations on the appropriate isolation methods and devices to ensure worker safety. Additionally, we offer customized training programs for all levels of employees, both through classroom sessions and hands-on demonstrations. Our services also include the installation of specialized LOTO products to meet your facility's specific needs, ensuring that energy sources are safely isolated and workers are trained to follow proper procedures."
+    },
+    {
+      "slug": "chemical-hazardous-protection",
+      "title": "Chemical Hazardous, Hand, and Body Protection",
+      "shortTitle": "Chemical Protection",
+      "image": "survey/survey-9.jpg",
+      "description": "Ensuring worker safety in hazardous environments, especially when working at heights or dealing with chemical hazards, requires a comprehensive approach. We conduct detailed risk assessments to identify potential hazards and recommend protective measures, such as body protection and fall protection systems. Our surveys also highlight necessary changes to work practices, environments, and safety systems to reduce the risk of injuries. We emphasize the importance of continuously re-evaluating hazards to ensure ongoing safety and compliance. Through this process, we provide tailored recommendations for improving protection and maintaining the safety and health of workers."
+    }
+  ],
+  "homeFeaturedSurveys": ["gas-detection-system-survey", "scba", "fit-testing"],
+  "trainingPrograms": [
+    { "slug": "papr-training", "title": "PAPR Training", "icon": "bi-wrench" },
+    { "slug": "scba-training", "title": "SCBA Training", "icon": "bi-mask" },
+    { "slug": "lockout-tagout-safety-training", "title": "Lockout Tagout Safety Training", "icon": "bi-lock-fill" },
+    { "slug": "forklift-crane-safety-training", "title": "Forklift/Crane Safety Training", "icon": "bi-truck" },
+    { "slug": "first-aid-training", "title": "First Aid Training", "icon": "bi-bandaid" },
+    { "slug": "fire-emergency-training", "title": "Fire & Emergency Training", "icon": "bi-fire" },
+    { "slug": "mock-drill-training", "title": "Mock Drill Training", "icon": "bi-shield-fill" },
+    { "slug": "chemical-safety-training", "title": "Chemical Safety Training", "icon": "bi-droplet" },
+    { "slug": "electrical-safety-auditor-training", "title": "Electrical Safety Auditor Training", "icon": "bi-lightning-fill" },
+    { "slug": "ppes-safe-material-handling", "title": "PPE'S & Safe Material Handling", "icon": "bi-dpad-fill" }
+  ],
+  "trainingGalleryImages": ["traning-demos/gallery-1.jpeg", "traning-demos/gallery-2.jpeg", "traning-demos/gallery-3.jpeg", "traning-demos/gallery-4.jpeg", "traning-demos/gallery-5.jpeg", "traning-demos/gallery-6.jpeg", "traning-demos/gallery-7.jpeg", "traning-demos/gallery-8.jpeg"],
+  "testimonials": [
+    { "name": "Ravi Kumar", "quote": "APEX CARE TECHNOLOGIES ensures timely deliveries and top-quality safety products at our sites" },
+    { "name": "Priya", "quote": "Their dedication to safety and quality gives us confidence in protecting our workforce." },
+    { "name": "Vikram", "quote": "APEX CARE TECHNOLOGIES delivers high-quality products on time, every time." },
+    { "name": "Manisha", "quote": "Great quality, competitive pricing, and consistent delivery from APEX CARE TECHNOLOGIES" },
+    { "name": "Sanjay", "quote": "Great quality, competitive pricing, and consistent delivery from APEX CARE TECHNOLOGIES" },
+    { "name": "Arun", "quote": "APEX CARE TECHNOLOGIES never compromises on safety and reliability." },
+    { "name": "Selvam", "quote": "A trusted partner offering excellent products and exceptional customer service." }
+  ],
+  "clientLogos": ["client-1", "client-2", "client-3", "client-4", "client-5", "client-6", "client-7", "client-8", "client-9", "client-10", "client-11", "client-12"],
+  "brandLogos": ["brand-1", "brand-2", "brand-3", "brand-4", "brand-5", "brand-6", "brand-7"],
+  "valueBadges": ["Superior quality", "Value for money", "Within time deliveries", "State-of-art infrastructure"],
+  "whyChooseUs": [
+    { "title": "Our Vision and Mission", "icon": "bi-rocket-takeoff", "text": "Our mission is to eliminate fire and safety accidents in industries, ensuring no life is lost. We focus on sustainable growth, setting new benchmarks in safety, product quality, and customer happiness." },
+    { "title": "Excellence Through Expertise", "icon": "bi-award-fill", "text": "Guided by Mrs. N. Selvarani (B.Pharm.) and Mr. K. Ajithkumar (M.E., Safety), we combine integrity and technical expertise. Their leadership helps us offer unmatched solutions to clients' needs." },
+    { "title": "Our Team", "icon": "bi-people", "text": "Our dedicated team of 16 professionals works around the clock, committed to providing the best products and services. We ensure the highest levels of safety, quality, and customer satisfaction." },
+    { "title": "Our Infrastructure", "icon": "bi-building", "text": "Operating from a two-floor warehouse in Cuddalore, Tamil Nadu, we meet the demands of our growing client base. Our modern infrastructure guarantees efficient operations and timely deliveries across all sectors." }
+  ],
+  "aboutCopy": {
+    "intro": "Welcome to APEX CARE TECHNOLOGIES, where safety meets innovation. As one of the fastest-growing manufacturers and suppliers in the Fire, safety, welding and hardware Industries, we are committed to delivering unmatched quality and value to our clients. Since our inception in 2022, we have established ourselves as a trusted name, known for providing reliable, cutting-edge solutions designed to keep industries safe and operations running smoothly.",
+    "network": "With an all-India network of business associates, we are capable of delivering bulk materials to industries nationwide, ensuring that your needs are met, no matter where you are. At APEX CARE TECHNOLOGIES, we are more than just a manufacturer; we are a partner in your journey toward safer, more efficient operations."
+  }
+}
