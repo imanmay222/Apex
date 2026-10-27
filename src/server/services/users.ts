@@ -153,6 +153,13 @@ export async function listUsers() {
   return (await AdminUserModel.find().sort({ createdAt: 1 }).lean()).map(toUser);
 }
 
+/** Active users enquiries can be assigned to: names only, so triage staff need no user-management rights. */
+export async function listAssignees() {
+  await connectDb();
+  const docs = await AdminUserModel.find({ active: true }).sort({ name: 1 }).select("name role").lean();
+  return docs.map((doc) => ({ id: String(doc._id), name: doc.name, role: doc.role as Role }));
+}
+
 export async function getUser(id: string) {
   await connectDb();
   const doc = await AdminUserModel.findById(userId(id)).lean();

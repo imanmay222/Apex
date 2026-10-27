@@ -1,8 +1,8 @@
 # Apex Care Technologies — Next.js + MongoDB
 
 Full-stack rebuild of [apexcaretechnologies.com](https://apexcaretechnologies.com). One Next.js 16
-app is both the website and the REST API; **MongoDB** stores everything — content, enquiries, users,
-sessions, analytics and uploaded files (GridFS).
+app is the website, the REST API and the **admin panel** (`/admin`); **MongoDB** stores everything —
+content, enquiries, users, sessions, analytics and uploaded files (GridFS).
 
 > What is implemented, in detail: **[features.readme.md](./features.readme.md)** ·
 > a printable report: **[Apex-Backend-Report.pdf](./Apex-Backend-Report.pdf)**
@@ -23,14 +23,25 @@ That single command starts a persistent local MongoDB (an npm-managed `mongod`, 
 | | |
 |---|---|
 | http://localhost:3000 | the site |
+| http://localhost:3000/admin | the admin panel (sign in with the seeded admin below) |
 | http://127.0.0.1:8025 | every email the site sends (enquiry alerts, confirmations…) |
 | `mongodb://127.0.0.1:27017/apex` | the database (works with Compass) |
 
 `.env` holds the settings (git-ignored; `.env.example` documents every variable). The seeded admin
-is `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`.
+is `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env` — use it at **/admin/login**, then add your team under
+**Users** and change that password under **My account**.
+
+### Admin panel
+
+Enquiry inbox and triage (call / WhatsApp / email the customer, status, assignee, notes, CSV export),
+editing of every content type with a media library, testimonial moderation, site settings (contact
+details, home page text, the catalogue PDF…), analytics, newsletter subscribers, users and roles, audit
+log, and backup/restore. `/admin` is protected twice: `src/proxy.ts` redirects visitors without a
+session cookie, and every page validates the session and its permission on the server. What each role
+sees is listed in [features.readme.md](./features.readme.md#9-admin-panel-admin).
 
 ```bash
-# the admin API, with curl
+# the admin API directly, with curl
 curl -c jar -H 'Content-Type: application/json' \
   -d '{"email":"admin@apexcare.local","password":"<ADMIN_PASSWORD>"}' \
   http://localhost:3000/api/admin/auth/login
@@ -57,9 +68,10 @@ curl      'http://localhost:3000/api/products?group=draeger'      # public
 
 `npm test` starts its own throw-away MongoDB and mail catcher on free ports, seeds, builds and
 serves the app, runs every suite, and tears it all down — your dev data is never touched.
-**300 tests in about a minute**, including 28 that drive your installed **Google Chrome**
+**333 tests in about a minute and a half**, including 61 that drive your installed **Google Chrome**
 (`playwright-core`; nothing to download) through the real UI: search, enquiry form, tracking,
-newsletter double opt-in, testimonial moderation, lightbox, mobile layout, dark mode, analytics.
+newsletter double opt-in, testimonial moderation, lightbox, mobile layout, dark mode, analytics, and
+the whole admin panel (sign-in protection, enquiry triage, content editing going live, roles).
 
 ## Stack
 
@@ -69,8 +81,11 @@ Nodemailer · scrypt (node:crypto) for passwords · Node's built-in test runner 
 ## Layout
 
 ```
-src/app/            pages (server components) and the REST API under src/app/api
-src/components/     UI
+src/app/(site)/     public pages (server components) with the site header/footer
+src/app/admin/      admin panel: /admin/login and the signed-in screens under (panel)/
+src/app/api/        the REST API (public + /api/admin)
+src/proxy.ts        redirects signed-out visitors away from /admin
+src/components/     UI (admin/ holds the admin panel's screens and widgets)
 src/lib/types.ts    JSON shapes shared by API and UI
 src/server/         config · db (models) · validation (zod) · services · data (cached reads)
                     · auth · mail · seed · lib (http wrapper, rate limit, cache, errors…)
@@ -100,8 +115,6 @@ npm run seed                      # once: indexes, content, first admin — then
 
 ## Not included
 
-- **No admin web UI.** The admin surface is the authenticated API under `/api/admin`
-  (curl, Postman, or a UI you build on it). This is the natural next step.
 - Product copy is the original site's generic category text; no standards or certifications are
   claimed. Per-product descriptions, features and specs can be added through the API.
 - Newsletter *sending* is out of scope: sign-ups, consent and CSV export are built; use a mailing

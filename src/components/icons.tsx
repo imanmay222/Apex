@@ -2,7 +2,7 @@ import type { SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
-function Base({ children, ...props }: IconProps & { children: React.ReactNode }) {
+export function Base({ children, ...props }: IconProps & { children: React.ReactNode }) {
   return (
     <svg
       viewBox="0 0 24 24"

@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
-import { AnalyticsBeacon } from "@/components/analytics-beacon";
-import { JsonLd } from "@/components/json-ld";
-import { MobileActionBar } from "@/components/mobile-action-bar";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { getSiteSettings } from "@/server/data/public";
 import "./globals.css";
 
@@ -32,41 +27,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const site = await getSiteSettings();
-  const { address } = site;
-
-  const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: site.companyName,
-    url: siteUrl,
-    logo: `${siteUrl}/media/navbrand.png`,
-    description: site.description,
-    foundingDate: String(site.foundedYear),
-    telephone: site.phones,
-    ...(site.emails.length ? { email: site.emails[0] } : {}),
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: `${address.street}, ${address.locality}`,
-      addressLocality: address.city,
-      addressRegion: address.state,
-      postalCode: address.postalCode,
-      addressCountry: "IN",
-    },
-    sameAs: [site.social.facebook, site.social.instagram].filter(Boolean),
-  };
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
-      <body className="flex min-h-dvh flex-col antialiased">
-        <JsonLd data={organizationSchema} />
-        <SiteHeader companyName={site.companyName} phone={site.phones[0] ?? ""} />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-        <MobileActionBar />
-        <AnalyticsBeacon />
-      </body>
+      <body className="flex min-h-dvh flex-col antialiased">{children}</body>
     </html>
   );
 }

@@ -179,7 +179,7 @@ export interface EnquiryDTO {
   priority: string;
   assignedTo: { id: string; name: string } | null;
   tags: string[];
-  notes: { id: string; authorName: string; body: string; createdAt: string }[];
+  notes: { id: string; authorId: string | null; authorName: string; body: string; createdAt: string }[];
   statusHistory: { status: string; at: string; by: string }[];
   firstResponseAt: string | null;
   source: Record<string, string | undefined>;
@@ -219,6 +219,7 @@ function toEnquiry(doc: EnquiryLean, assignees: Map<string, string>): EnquiryDTO
     tags: [...(doc.tags ?? [])],
     notes: (doc.notes ?? []).map((note) => ({
       id: String((note as { _id?: Types.ObjectId })._id),
+      authorId: note.authorId ? String(note.authorId) : null,
       authorName: note.authorName ?? "Unknown",
       body: note.body,
       createdAt: note.createdAt.toISOString(),
