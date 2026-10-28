@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright-core";
-import { BASE, Client, PNG_1X1, adminClient, purgeTestEnquiries, purgeTestUsers, readyToken, uid, userClient } from "./helpers";
+import { BASE, Client, PNG_1X1, adminClient, purgeTestEnquiries, purgeTestUsers, readyToken, sleep, uid, userClient } from "./helpers";
 
 /**
  * The admin panel in a real browser: sign-in and route protection, the enquiry inbox, content
@@ -65,6 +65,9 @@ after(async () => {
   const media = await admin.get(`/api/admin/media?q=${MARK}&limit=50`);
   for (const item of media.body?.data ?? []) await admin.del(`/api/admin/media/${item.id}?force=true`);
   await purgeTestEnquiries(admin, MARK);
+  const orders = await admin.get(`/api/admin/orders?q=${MARK}&status=new,quoted,confirmed,dispatched,delivered,cancelled,spam&limit=50`);
+  const orderIds = (orders.body?.data ?? []).map((o: { id: string }) => o.id);
+  if (orderIds.length) await admin.post("/api/admin/orders/bulk", { action: "delete", ids: orderIds });
   await purgeTestUsers(admin);
 });
 
@@ -124,7 +127,7 @@ describe("admin sign-in and route protection", () => {
 });
 
 describe("every admin page loads cleanly", () => {
-  const pages = ["/admin", "/admin/enquiries", "/admin/content", "/admin/content/products", "/admin/content/products/new", "/admin/content/testimonials?view=pending", "/admin/media", "/admin/settings", "/admin/analytics", "/admin/subscribers", "/admin/users", "/admin/audit", "/admin/system", "/admin/account"];
+  const pages = ["/admin", "/admin/orders", "/admin/enquiries", "/admin/content", "/admin/content/products", "/admin/content/products/new", "/admin/content/testimonials?view=pending", "/admin/media", "/admin/settings", "/admin/analytics", "/admin/subscribers", "/admin/users", "/admin/audit", "/admin/system", "/admin/account"];
   for (const path of pages) {
     it(`${path}: renders without errors`, async () => {
       const { page, problems } = session;
@@ -189,15 +192,16 @@ describe("enquiries: what customers send reaches the team", () => {
     await page.getByText("Tags saved.").waitFor();
 
     const stored = (await admin.get(`/api/admin/enquiries/${id}`)).body.data;
-    assert.equal(stored.status, "contacted");
-    assert.ok(stored.assignedTo);
-    assert.ok(stored.firstResponseAt);
-    assert.deepEqual(stored.tags, ["refinery", "bulk"]);
-    assert.equal(stored.notes.length, 1);
+    const seen = JSON.stringify({ status: stored.status, history: stored.statusHistory, notes: stored.notes.length, tags: stored.tags });
+    assert.equal(stored.status, "contacted", seen);
+    assert.ok(stored.assignedTo, seen);
+    assert.ok(stored.firstResponseAt, seen);
+    assert.deepEqual(stored.tags, ["refinery", "bulk"], seen);
+    assert.equal(stored.notes.length, 1, seen);
 
     // The customer's tracker reflects the change.
     const tracked = await new Client().post("/api/enquiries/track", { reference, mobile: "9876501234" });
-    assert.equal(tracked.body.data.status, "In progress");
+    assert.equal(tracked.body.data?.status, "In progress", `track ${tracked.status}: ${tracked.text}`);
   });
 
   it("filters, bulk-updates and exports", async () => {
@@ -221,6 +225,77 @@ describe("enquiries: what customers send reaches the team", () => {
     await page.goto(`${BASE}/admin`);
     await page.getByText("Latest enquiries").waitFor();
     await page.getByText(`${MARK} Plant Manager`).waitFor();
+  });
+});
+
+describe("quote basket: a customer orders, the team handles it", () => {
+  let reference = "";
+
+  it("adds products from their pages, adjusts the basket and sends the order", async () => {
+    const { context, page, problems } = await open();
+    await page.goto(`${BASE}/products/head-protection`);
+    const add = page.getByRole("group", { name: "Add to quote basket" });
+    await add.getByLabel("Quantity", { exact: true }).fill("25");
+    await add.getByLabel(/Size, model or colour/).fill("White, ISI marked");
+    await add.getByRole("button", { name: "Add to quote basket" }).click();
+    await page.getByText("Added 25 to your quote basket").waitFor();
+    await page.getByRole("link", { name: "Quote basket, 1 product" }).first().waitFor();
+
+    await page.goto(`${BASE}/products/fire-extinguisher`);
+    await page.getByRole("group", { name: "Add to quote basket" }).getByRole("button", { name: "Add to quote basket" }).click();
+    await page.getByRole("link", { name: "Quote basket, 2 products" }).first().click();
+    await page.waitForURL(/\/quote$/);
+
+    const basket = page.getByRole("region", { name: "Your quote basket" });
+    await basket.getByRole("button", { name: /Increase Fire Extinguisher/ }).click();
+    await basket.getByRole("button", { name: /Increase Fire Extinguisher/ }).click();
+    assert.equal(await basket.getByLabel(/Quantity of Fire Extinguisher/).inputValue(), "3");
+
+    const form = page.getByRole("form", { name: "Order details" });
+    await form.getByLabel("Your name").fill(`${MARK} Site Buyer`);
+    await form.getByLabel("Mobile number").fill("98765 44556");
+    await form.getByLabel("Company (optional)").fill("Coastal Chemicals");
+    await form.getByLabel("Delivery address").fill("Plot 12, SIPCOT Phase II");
+    await form.getByLabel("City").fill("Cuddalore");
+    await form.getByLabel("PIN code").fill("607005");
+    await sleep(2300); // the server enforces a minimum fill time
+    await form.getByRole("button", { name: /Send order for quote \(2 products\)/ }).click();
+
+    await page.getByText("Order received").waitFor();
+    reference = ((await page.getByText(/ORD-\d{4}-\d{6}/).first().textContent()) ?? "").match(/ORD-\d{4}-\d{6}/)![0];
+    await page.getByRole("link", { name: "Quote basket, empty" }).first().waitFor();
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+
+  it("appears in the admin Orders desk with its lines, and moves to the next step", async () => {
+    assert.ok(reference, "needs the order placed above");
+    const { page } = session;
+    await page.goto(`${BASE}/admin/orders`);
+    await page.getByRole("searchbox").fill(MARK);
+    const row = page.locator("tr", { hasText: reference });
+    await row.waitFor();
+    assert.match((await row.textContent()) ?? "", /2 products · 28 units/);
+
+    await row.getByRole("link", { name: `${MARK} Site Buyer` }).click();
+    await page.waitForURL(/\/admin\/orders\/[0-9a-f]{24}$/);
+    await page.getByText("White, ISI marked").waitFor();
+    await page.getByText("Plot 12, SIPCOT Phase II").waitFor();
+    await page.getByRole("button", { name: "Mark quote sent" }).click();
+    await page.getByText("Status set to “Quote sent”.").waitFor();
+    await page.getByRole("button", { name: "Mark confirmed" }).waitFor();
+  });
+
+  it("the customer sees the new status on the tracking page", async () => {
+    const { context, page } = await open();
+    await page.goto(`${BASE}/quote/track?ref=${reference}`);
+    const tracker = page.getByRole("form", { name: "Track your order" });
+    assert.equal(await tracker.getByLabel("Reference number").inputValue(), reference);
+    await tracker.getByLabel("Mobile number").fill("9876544556");
+    await tracker.getByRole("button", { name: "Track" }).click();
+    await page.getByRole("status").locator("p.font-display").filter({ hasText: /^Quote sent$/ }).waitFor();
+    await page.getByRole("status").getByText("Head Protection").waitFor();
+    await context.close();
   });
 });
 

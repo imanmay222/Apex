@@ -2,7 +2,7 @@ import { Schema, type InferSchemaType } from "mongoose";
 import { registerModel } from "./common";
 
 /* ------------------------------------------------------------------ */
-/* Counters: atomic sequences (enquiry reference numbers)              */
+/* Counters: atomic sequences (enquiry and order reference numbers)    */
 /* ------------------------------------------------------------------ */
 
 const counterSchema = new Schema(
@@ -73,6 +73,7 @@ export const EVENT_TYPES = [
   "cta_click",
   "search",
   "enquiry_submit",
+  "order_submit",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 

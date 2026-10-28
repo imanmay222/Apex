@@ -155,10 +155,14 @@ describe("catalogue download", () => {
     assert.equal(r.status, 302);
     assert.match(r.headers.get("location") ?? "", /\/media\/pdf\/apexcare-technologies\.pdf$/);
   });
-  it("serves that file", async () => {
+  it("serves that file, complete and readable", async () => {
     const r = await fetch(`${BASE}/media/pdf/apexcare-technologies.pdf`);
     assert.equal(r.status, 200);
     assert.match(r.headers.get("content-type") ?? "", /pdf/);
+    // A truncated PDF still downloads with a 200, but no viewer can open it: check both ends.
+    const bytes = Buffer.from(await r.arrayBuffer());
+    assert.equal(bytes.subarray(0, 5).toString("latin1"), "%PDF-");
+    assert.ok(bytes.subarray(-1024).toString("latin1").includes("%%EOF"), "the PDF must end with %%EOF (file is truncated)");
   });
 });
 

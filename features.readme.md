@@ -1,17 +1,18 @@
 # Features implemented
 
 The Apex Care Technologies site: **Next.js 16 as the server, MongoDB as the only data store**, with a
-public website, a REST API and a sign-in protected **admin panel at `/admin`**. Everything below is
-implemented and covered by the automated suite (**333 tests, all passing**, run by `npm test`; 61 of
+public website with a **quote basket for ordering**, a REST API and a sign-in protected **admin panel
+at `/admin`**. Everything below is
+implemented and covered by the automated suite (**362 tests, all passing**, run by `npm test`; 65 of
 them drive real Chrome through the UI).
 
 | At a glance | |
 |---|---|
-| API operations | **73** (27 public, 46 admin) in 57 route files |
-| MongoDB collections | **17** + GridFS (`media.files`, `media.chunks`) |
-| Roles / permissions | 3 roles, 12 permissions |
-| Admin panel | **14 screens** at `/admin`, protected server-side, menus filtered by role |
-| Automated tests | **333** (49 unit · 284 against a live server and database, 61 of them in real Chrome) |
+| API operations | **84** (29 public, 55 admin) in 66 route files |
+| MongoDB collections | **18** + GridFS (`media.files`, `media.chunks`) |
+| Roles / permissions | 3 roles, 15 permissions |
+| Admin panel | **16 screens** at `/admin`, protected server-side, menus filtered by role |
+| Automated tests | **362** (49 unit · 313 against a live server and database, 65 of them in real Chrome) |
 | Production dependency advisories | **0** (`npm audit --omit=dev`) |
 
 ---
@@ -59,7 +60,40 @@ Public form on Home, Contact, every Product, Survey and Training page.
   assignment; tags; internal notes (author-only delete); bulk status/assign/delete; delete
   (admin only); **CSV export** with Excel BOM and spreadsheet-formula-injection protection.
 
-## 3. Customer testimonials with moderation
+## 3. Quote orders (basket, no payment)
+
+Customers can order several products at once without prices or payment; the team replies with a
+quote, then confirms, dispatches and delivers.
+
+- **Add to quote basket** on every product page: quantity stepper plus an optional "size, model or
+  colour" note. The basket lives in the browser (localStorage, no account, no cookie), stays in sync
+  across tabs, and shows a count in the header and the mobile action bar.
+- **`/quote`**: review the basket (change quantities and notes, remove lines), then send it with name,
+  mobile, optional email / company / **GSTIN**, delivery address (Indian state list, 6-digit PIN) and
+  notes. Success screen shows a reference like **`ORD-2026-000123`** and clears the basket.
+- **Server-side checks:** every product must exist and be published (errors point at the basket line);
+  repeated lines for the same product + note are merged; quantities 1–100,000; up to 50 lines; GSTIN
+  format; same token / honeypot / spam scoring / per-IP limits / double-submit collapsing as enquiries.
+  Spam is stored, hidden, never emailed, and purged after 30 days.
+- **Notifications:** an itemised email to the sales team (reply-to the customer), a confirmation with
+  the items and a tracking link to the customer, and an optional signed webhook (`order.created`).
+  Failures are retried by the same cron job as enquiries; the team can resend from the order page.
+- **Tracking:** `/quote/track` (and the Contact page tracker, which now accepts ORD- and ENQ-
+  references): Received → Quote sent → Confirmed → Dispatched → Delivered, or Cancelled. Needs the
+  reference **and** the mobile number; shows the items but never the address, notes or assignee.
+- **Admin Orders desk** (`/admin/orders`, with a "new orders" badge in the menu): status tabs, search
+  (name, company, mobile, reference, product, city, PIN), product / assignee / date filters, bulk
+  status / assign / delete, CSV export with one row per order line. Order page: items and quantities,
+  customer and GSTIN, delivery address with **Copy address** and **Open in Maps**, one-tap Call /
+  WhatsApp / Email, one-click **next step** button (Mark quote sent → confirmed → dispatched →
+  delivered), assignee, internal notes, activity with first-response time, notification status with
+  resend, spam info, **Print** (a clean packing-slip layout).
+- **Dashboard & analytics:** new / open / ready-to-dispatch / delivered tiles, orders per day, most
+  ordered products by units, latest orders; analytics counts quote orders and basket taps.
+- **Permissions:** `orders:read` and `orders:write` for admin and sales; `orders:delete` admin only;
+  editors don't see orders.
+
+## 4. Customer testimonials with moderation
 
 - Public "Share your experience" form on the About page → stored **unpublished**
   (`source: public`); the team is emailed; nothing is public until approved.
@@ -67,7 +101,7 @@ Public form on Home, Contact, every Product, Survey and Training page.
 - Submitter email kept private (admin-only). Same token/honeypot/spam/limit defences; spam and
   repeats dropped silently.
 
-## 4. Newsletter (double opt-in)
+## 5. Newsletter (double opt-in)
 
 - Footer sign-up → confirmation email → subscribed only after the address owner presses the
   button on the confirmation page (links open a page, they don't act on GET, so mail scanners
@@ -77,13 +111,13 @@ Public form on Home, Contact, every Product, Survey and Training page.
 - Admin: list with status counts, **CSV export** (confirmed only by default), permanent erasure.
   Unconfirmed sign-ups expire after 14 days.
 
-## 5. Search
+## 6. Search
 
 - Cross-collection (products, surveys, training), all-terms-must-match, relevance-ranked,
   regex-safe (no injection / ReDoS). **Live search dialog** in the header, debounced with
   cancellation of stale requests. Searches feed analytics.
 
-## 6. Media (files stored in MongoDB GridFS)
+## 7. Media (files stored in MongoDB GridFS)
 
 - Upload (images ≤ 8 MB, PDF ≤ 25 MB) with **magic-byte sniffing** (client MIME type ignored);
   SVG/HTML/executables rejected; identical files de-duplicated by SHA-256.
@@ -94,7 +128,7 @@ Public form on Home, Contact, every Product, Survey and Training page.
 - **Catalogue download tracking:** every "Download" link goes through `/api/catalogue`, which
   counts it and redirects to the current file (static or an uploaded PDF).
 
-## 7. Analytics (first-party, privacy-preserving)
+## 8. Analytics (first-party, privacy-preserving)
 
 - Cookie-less beacon: page views, product/survey views, call/WhatsApp/email clicks; server-side
   events for catalogue downloads, searches and enquiries.
@@ -104,7 +138,7 @@ Public form on Home, Contact, every Product, Survey and Training page.
 - Admin report: totals, visitors, **enquiry conversion rate**, daily time series, top pages /
   products / surveys / searches, CTA clicks, devices, referrers, date-range queries.
 
-## 8. Admin API
+## 9. Admin API
 
 - **Generic CRUD** for 8 content types: list (search, filters, sort, pagination), create (auto
   slug incl. German transliteration, conflict-safe), partial update, delete, **reorder**,
@@ -120,7 +154,7 @@ Public form on Home, Contact, every Product, Survey and Training page.
   nothing is written; error paths point at the exact row.
 - Manual cache purge.
 
-## 9. Admin panel (`/admin`)
+## 10. Admin panel (`/admin`)
 
 A complete web interface over the admin API, in the site's own design (light and dark, phone to
 desktop). Every screen calls the same permission-checked API the tests exercise.
@@ -164,7 +198,7 @@ desktop). Every screen calls the same permission-checked API the tests exercise.
 - **My account:** profile and permissions, change password, signed-in devices with sign-out per device
   or everywhere else, sign out.
 
-## 10. Authentication & authorization
+## 11. Authentication & authorization
 
 - Email + password; passwords hashed with **scrypt** (per-user salt, versioned format), policy
   (12+ chars, letters+digits, no common/email-based passwords).
@@ -176,12 +210,12 @@ desktop). Every screen calls the same permission-checked API the tests exercise.
   enumeration).
 - **CSRF protection** for cookie-authenticated writes (Origin / Sec-Fetch-Site), not applied to
   Bearer clients.
-- **RBAC:** `admin` (everything), `editor` (content, media, analytics), `sales` (enquiries,
+- **RBAC:** `admin` (everything), `editor` (content, media, analytics), `sales` (orders, enquiries,
   subscribers read, analytics). User management: create, change role, deactivate (kills sessions),
   reset password, delete; the last administrator and the acting user are protected.
 - Password change revokes other sessions.
 
-## 11. Platform & hardening
+## 12. Platform & hardening
 
 - **Uniform API:** `{data, meta}` / `{error:{code,message,details}, requestId}`, request ids,
   proper status codes, pagination metadata, strict unknown-field rejection on every body/query.
@@ -196,19 +230,20 @@ desktop). Every screen calls the same permission-checked API the tests exercise.
 - Build needs **no database**; `next start` renders per request with cached, tag-invalidated reads.
 - Dependencies: **0 production advisories** (Next.js upgraded 16.3.6 → 16.4.2 to fix two).
 
-## 12. Developer experience
+## 13. Developer experience
 
 - `npm run dev:all` — local MongoDB (npm-managed `mongod`, persistent) + local mail catcher +
   idempotent seed + dev server. No Docker, no system installs.
 - Idempotent **seeder** (restores deleted originals, never overwrites edits), `create-admin` CLI.
 - Hermetic **`npm test`** (throw-away DB + mail + server on free ports).
 
-## 13. Test coverage
+## 14. Test coverage
 
 | Suite | Tests | What it proves |
 |---|---:|---|
 | unit | 49 | slugs, phone parsing, CSV-injection guard, spam scoring, file sniffing, scrypt, tokens, permissions |
 | public API | 38 | every public endpoint, filters, pagination, search, caching/security headers |
+| orders | 25 | basket checkout incl. **real emails**, line merging, double-submit collapse, validation (lines, quantities, PIN, GSTIN, unknown products), honeypot spam, tracking (items shown, address hidden, cancellation), triage, notes, filters, bulk, CSV, dashboard/analytics, resend, sales vs editor access |
 | enquiries | 38 | pipeline end to end incl. **real emails**, spam, rate limits, triage, notes, bulk, CSV |
 | auth | 33 | login, enumeration, lockout, sessions, CSRF, role matrix, password change, user mgmt |
 | content | 35 | CRUD for all types, **instant public visibility**, integrity rules, settings merge |
@@ -218,9 +253,9 @@ desktop). Every screen calls the same permission-checked API the tests exercise.
 | infra | 10 | TTL & unique indexes, seed idempotency, hashing at rest |
 | webhook | 6 | HMAC signature, failure → retry → success, attempt cap |
 | browser (Chrome) | 28 | all pages clean (no console errors / broken images / overflow), search, forms, tracker, newsletter, testimonial, lightbox, mobile, dark mode, SEO, analytics, privacy signal |
-| admin panel (Chrome) | 33 | sign-in redirect and return, forged cookie rejected, no open redirect, noindex, sign-out; all 14 admin screens load cleanly; a website enquiry reaches the inbox and is triaged (status, assign, note, tags, bulk, CSV) and the customer's tracker follows; product create → live, edit → live, hide → 404, delete; testimonial approval → About page; settings → home page; catalogue PDF; media upload/alt/delete; sales vs editor access; mobile drawer |
+| admin panel (Chrome) | 37 | sign-in redirect and return, forged cookie rejected, no open redirect, noindex, sign-out; all admin screens load cleanly; a customer fills a quote basket on product pages, sends it, the order reaches the Orders desk, is moved to “Quote sent” and the customer's tracker follows; a website enquiry reaches the inbox and is triaged (status, assign, note, tags, bulk, CSV) and the customer's tracker follows; product create → live, edit → live, hide → 404, delete; testimonial approval → About page; settings → home page; catalogue PDF; media upload/alt/delete; sales vs editor access; mobile drawer |
 
-## 14. API reference
+## 15. API reference
 
 Public (no sign-in):
 
@@ -236,6 +271,7 @@ Public (no sign-in):
 | GET | `/api/media/{id}` | stream an uploaded file |
 | GET | `/api/enquiries/token` | signed form token |
 | POST | `/api/enquiries` · `/api/enquiries/track` | submit · track |
+| POST | `/api/orders` · `/api/orders/track` | send a quote basket · track an order |
 | POST | `/api/testimonials` | submit for moderation |
 | POST | `/api/newsletter/subscribe` | start double opt-in |
 | GET/POST | `/api/newsletter/confirm` · `/unsubscribe` | token pages (button → POST) |
@@ -260,6 +296,9 @@ Admin (session cookie or Bearer; permission in brackets):
 | GET/POST | `/api/admin/media` · PATCH/DELETE/GET `/media/{id}` | media:write |
 | GET | `/api/admin/subscribers` · `/export` | subscribers:read |
 | DELETE | `/api/admin/subscribers/{id}` | subscribers:manage |
+| GET | `/api/admin/orders` · `/export` · `/{id}` | orders:read |
+| PATCH / POST | `/orders/{id}` · `/{id}/notes` · `/{id}/resend` · `/bulk` | orders:write (bulk delete: orders:delete) |
+| DELETE | `/api/admin/orders/{id}` · `/{id}/notes/{noteId}` | orders:delete · orders:write |
 | GET | `/api/admin/dashboard` · `/api/admin/assignees` | enquiries:read |
 | GET | `/api/admin/analytics` | analytics:read |
 | GET | `/api/admin/audit` | audit:read |
@@ -268,7 +307,7 @@ Admin (session cookie or Bearer; permission in brackets):
 `{resource}` ∈ `products`, `product-groups`, `surveys`, `training`, `gallery`, `testimonials`,
 `logos`, `leaders`.
 
-## 15. Honest limits
+## 16. Honest limits
 
 - Verified in Chrome only (headless); not cross-browser, not screen-reader tested.
 - Docker files exist but were not exercised end-to-end here; local Node is the supported path.

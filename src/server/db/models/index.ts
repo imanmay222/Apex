@@ -1,6 +1,7 @@
 export * from "./admin-user";
 export * from "./session";
 export * from "./enquiry";
+export * from "./order";
 export * from "./product";
 export * from "./product-group";
 export * from "./survey";
@@ -16,6 +17,7 @@ export * from "./infra";
 import { AdminUserModel } from "./admin-user";
 import { SessionModel } from "./session";
 import { EnquiryModel } from "./enquiry";
+import { OrderModel } from "./order";
 import { ProductModel } from "./product";
 import { ProductGroupModel } from "./product-group";
 import { SurveyModel } from "./survey";
@@ -32,6 +34,7 @@ export const allModels = [
   AdminUserModel,
   SessionModel,
   EnquiryModel,
+  OrderModel,
   ProductModel,
   ProductGroupModel,
   SurveyModel,

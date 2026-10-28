@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, Search } from "../icons";
 import { cx } from "../ui";
-import { adminApi, errorMessage, useAdminQuery, withQuery } from "./api";
+import { adminApi, errorMessage, syncUrl, useAdminQuery, withQuery } from "./api";
 import { ENQUIRY_STATUS_LABELS, ENQUIRY_TYPE_LABELS, timeAgo, formatDate } from "./format";
 import { Badge, Button, Card, ConfirmButton, Empty, ErrorNotice, Loading, PageHeader, Pagination, PriorityBadge, StatusBadge, Tabs, btn, inputClass, useSelection, useToast } from "./ui";
 import { inlineInputClass } from "./styles";
@@ -67,7 +66,6 @@ function apiQuery(filters: EnquiryFilters) {
 }
 
 export function EnquiriesList({ initial, viewerId, canWrite, canDelete }: { initial: EnquiryFilters; viewerId: string; canWrite: boolean; canDelete: boolean }) {
-  const router = useRouter();
   const toast = useToast();
   const [filters, setFilters] = useState<EnquiryFilters>(initial);
   const [search, setSearch] = useState(initial.q ?? "");
@@ -79,15 +77,21 @@ export function EnquiriesList({ initial, viewerId, canWrite, canDelete }: { init
   const assignees = useAdminQuery<Assignee[]>("/api/admin/assignees");
 
   // Keep the URL shareable and the back button meaningful.
-  useEffect(() => {
-    router.replace(withQuery("/admin/enquiries", filters), { scroll: false });
-  }, [filters, router]);
+  useEffect(() => syncUrl("/admin/enquiries", withQuery("/admin/enquiries", filters)), [filters]);
 
-  // Debounced free-text search.
+  // Debounced free-text search. Kept in a ref so opening a row can flush it first: a late update
+  // must never rewrite the URL while the router is navigating away.
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const withSearch = (f: typeof filters) => ((f.q ?? "") === search.trim() ? f : { ...f, q: search.trim() || undefined, page: undefined });
   useEffect(() => {
-    const timer = setTimeout(() => setFilters((f) => (f.q ?? "") === search.trim() ? f : { ...f, q: search.trim() || undefined, page: undefined }), 350);
-    return () => clearTimeout(timer);
+    searchTimer.current = setTimeout(() => setFilters(withSearch), 350);
+    return () => clearTimeout(searchTimer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- withSearch only reads `search`
   }, [search]);
+  const flushSearch = () => {
+    clearTimeout(searchTimer.current);
+    syncUrl("/admin/enquiries", withQuery("/admin/enquiries", withSearch(filters)));
+  };
 
   const { selected, setSelected, toggle } = useSelection(listPath);
 
@@ -242,7 +246,7 @@ export function EnquiriesList({ initial, viewerId, canWrite, canDelete }: { init
                       </td>
                     ) : null}
                     <td className="px-4 py-3">
-                      <Link href={`/admin/enquiries/${row.id}`} className={cx("text-foreground hover:text-safety-500 hover:underline", row.status === "new" ? "font-semibold" : "font-medium")}>
+                      <Link href={`/admin/enquiries/${row.id}`} onClick={flushSearch} className={cx("text-foreground hover:text-safety-500 hover:underline", row.status === "new" ? "font-semibold" : "font-medium")}>
                         {row.name}
                       </Link>
                       <p className="text-xs text-muted tabular-nums">{row.mobile}</p>

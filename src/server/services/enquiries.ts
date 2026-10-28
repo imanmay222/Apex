@@ -85,14 +85,17 @@ export function scoreSpam(input: { name: string; message: string; email?: string
 /* Create                                                              */
 /* ------------------------------------------------------------------ */
 
-async function nextReference(): Promise<string> {
+const REFERENCE_PREFIX = { enquiry: "ENQ", order: "ORD" } as const;
+
+/** Next human-friendly reference (ENQ-2026-000123 / ORD-2026-000123); the counter restarts each year. */
+export async function nextReference(kind: keyof typeof REFERENCE_PREFIX = "enquiry"): Promise<string> {
   const year = new Date().getFullYear();
   const counter = await CounterModel.findOneAndUpdate(
-    { _id: `enquiry-${year}` },
+    { _id: `${kind}-${year}` },
     { $inc: { seq: 1 } },
     { upsert: true, returnDocument: "after", lean: true },
   );
-  return `ENQ-${year}-${String(counter?.seq ?? 1).padStart(6, "0")}`;
+  return `${REFERENCE_PREFIX[kind]}-${year}-${String(counter?.seq ?? 1).padStart(6, "0")}`;
 }
 
 async function resolveSubject(type: EnquiryType, slug?: string): Promise<{ slug: string; title: string } | null> {
@@ -238,7 +241,7 @@ function toEnquiry(doc: EnquiryLean, assignees: Map<string, string>): EnquiryDTO
   };
 }
 
-async function assigneeNames(docs: EnquiryLean[]): Promise<Map<string, string>> {
+export async function assigneeNames(docs: { assignedTo?: unknown }[]): Promise<Map<string, string>> {
   const ids = [...new Set(docs.map((d) => d.assignedTo).filter(Boolean).map(String))];
   if (ids.length === 0) return new Map();
   const users = await AdminUserModel.find({ _id: { $in: ids } }).select("name").lean();
@@ -310,7 +313,7 @@ interface UpdateInput {
   tags?: string[];
 }
 
-async function assertAssignable(userId: string) {
+export async function assertAssignable(userId: string) {
   const user = await AdminUserModel.findOne({ _id: userId, active: true }).select("_id").lean();
   if (!user) throw validationFailed([{ path: "assignedTo", message: "No active user with that id" }]);
 }
@@ -504,10 +507,13 @@ export async function trackEnquiry(reference: string, mobile: string) {
   const current = PUBLIC_STATUS[doc.status] ?? PUBLIC_STATUS.new;
   return {
     reference: doc.reference,
+    kind: "enquiry" as const,
     type: doc.type,
     subject: doc.subjectTitle ?? null,
     status: current.label,
     step: current.step,
+    steps: ["Received", "In progress", "Quote sent", "Closed"],
+    cancelled: false,
     receivedAt: iso(doc.createdAt),
     updatedAt: iso(doc.updatedAt),
     history: (doc.statusHistory ?? [])

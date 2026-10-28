@@ -9,7 +9,7 @@ import { inlineInputClass } from "./styles";
 
 type Entry = { id: string; at: string; actor: string | null; action: string; resource: string; resourceId: string | null; summary: string | null; fields: string[] };
 
-const RESOURCES = ["enquiries", "products", "product-groups", "surveys", "training", "gallery", "testimonials", "logos", "leaders", "media", "settings", "subscribers", "users", "auth", "content", "cache"];
+const RESOURCES = ["orders", "enquiries", "products", "product-groups", "surveys", "training", "gallery", "testimonials", "logos", "leaders", "media", "settings", "subscribers", "users", "auth", "content", "cache"];
 const ACTIONS = ["create", "update", "delete", "publish", "reorder", "bulk-delete", "status", "assign", "note", "note-delete", "resend", "upload", "export", "login", "logout", "change-password", "reset-password", "revalidate"];
 
 const tone = (action: string): Tone =>

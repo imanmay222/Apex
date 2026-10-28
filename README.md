@@ -31,14 +31,23 @@ That single command starts a persistent local MongoDB (an npm-managed `mongod`, 
 is `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env` — use it at **/admin/login**, then add your team under
 **Users** and change that password under **My account**.
 
+### Ordering (quote basket)
+
+Visitors add products with quantities to a **quote basket** from any product page, then send it from
+`/quote` with their delivery details. There are no prices or payments: the team receives an itemised
+email, quotes the customer, and moves the order through Quote sent → Confirmed → Dispatched →
+Delivered under **Admin → Orders**. Customers follow along at `/quote/track` with their `ORD-…`
+reference and mobile number.
+
 ### Admin panel
 
-Enquiry inbox and triage (call / WhatsApp / email the customer, status, assignee, notes, CSV export),
-editing of every content type with a media library, testimonial moderation, site settings (contact
-details, home page text, the catalogue PDF…), analytics, newsletter subscribers, users and roles, audit
-log, and backup/restore. `/admin` is protected twice: `src/proxy.ts` redirects visitors without a
-session cookie, and every page validates the session and its permission on the server. What each role
-sees is listed in [features.readme.md](./features.readme.md#9-admin-panel-admin).
+Order desk (items, delivery address, next-step button, printable packing slip), enquiry inbox and
+triage (call / WhatsApp / email the customer, status, assignee, notes, CSV export), editing of every
+content type with a media library, testimonial moderation, site settings (contact details, home page
+text, the catalogue PDF…), analytics, newsletter subscribers, users and roles, audit log, and
+backup/restore. `/admin` is protected twice: `src/proxy.ts` redirects visitors without a session
+cookie, and every page validates the session and its permission on the server. What each role sees
+is listed in [features.readme.md](./features.readme.md#10-admin-panel-admin).
 
 ```bash
 # the admin API directly, with curl
@@ -68,10 +77,11 @@ curl      'http://localhost:3000/api/products?group=draeger'      # public
 
 `npm test` starts its own throw-away MongoDB and mail catcher on free ports, seeds, builds and
 serves the app, runs every suite, and tears it all down — your dev data is never touched.
-**333 tests in about a minute and a half**, including 61 that drive your installed **Google Chrome**
+**362 tests in under two minutes**, including 65 that drive your installed **Google Chrome**
 (`playwright-core`; nothing to download) through the real UI: search, enquiry form, tracking,
 newsletter double opt-in, testimonial moderation, lightbox, mobile layout, dark mode, analytics, and
-the whole admin panel (sign-in protection, enquiry triage, content editing going live, roles).
+the quote basket and order desk, and the whole admin panel (sign-in protection, enquiry triage,
+content editing going live, roles).
 
 ## Stack
 

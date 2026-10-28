@@ -6,6 +6,9 @@ export const PERMISSIONS = [
   "enquiries:read",
   "enquiries:write",
   "enquiries:delete",
+  "orders:read",
+  "orders:write",
+  "orders:delete",
   "subscribers:read",
   "subscribers:manage",
   "settings:write",
@@ -20,7 +23,7 @@ export type Permission = (typeof PERMISSIONS)[number];
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   admin: PERMISSIONS,
   editor: ["content:write", "media:write", "analytics:read"],
-  sales: ["enquiries:read", "enquiries:write", "subscribers:read", "analytics:read"],
+  sales: ["enquiries:read", "enquiries:write", "orders:read", "orders:write", "subscribers:read", "analytics:read"],
 };
 
 export function permissionsFor(role: Role): readonly Permission[] {

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BasketButton } from "./quote/basket-link";
 import { SearchDialog } from "./search-dialog";
 import { ArrowRight, Close, Menu, Phone } from "./icons";
 import { buttonClass, cx } from "./ui";
@@ -83,6 +84,7 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
 
         <div className="hidden items-center gap-3 lg:flex">
           <SearchDialog />
+          <BasketButton />
           <a
             href={`tel:${phone.replace(/\s/g, "")}`}
             className="flex items-center gap-2 text-sm font-medium text-muted transition-colors hover:text-foreground"
@@ -98,6 +100,7 @@ export function SiteHeader({ companyName, phone }: { companyName: string; phone:
 
         <div className="flex items-center gap-2 lg:hidden">
         <SearchDialog />
+        <BasketButton />
         <button
           type="button"
           onClick={() => setOpen(true)}

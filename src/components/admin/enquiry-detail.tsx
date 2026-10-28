@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { ArrowLeft, Mail, Phone, WhatsApp } from "../icons";
-import { cx } from "../ui";
 import { adminApi, errorMessage, useAdminQuery } from "./api";
 import type { Assignee } from "./enquiries-list";
 import { ENQUIRY_STATUS_LABELS, ENQUIRY_TYPE_LABELS, formatDate, subjectUrl, timeAgo } from "./format";
-import { ExternalLink, Send, Trash } from "./icons";
-import { Badge, Button, Card, ConfirmButton, DeliveryBadge, ErrorNotice, Field, Loading, PageHeader, PriorityBadge, StatusBadge, btn, inputClass, useToast } from "./ui";
+import { ExternalLink, Trash } from "./icons";
+import { ActivityCard, NotesCard, NotificationsCard, SpamCard } from "./record-parts";
+import { Button, Card, ConfirmButton, ErrorNotice, Field, Loading, PageHeader, PriorityBadge, StatusBadge, btn, inputClass, useToast } from "./ui";
 
 type Delivery = { status: string; attempts: number; lastAttemptAt: string | null; sentAt: string | null; lastError: string | null };
 
@@ -161,28 +161,9 @@ export function EnquiryDetail({ id, viewer, canWrite, canDelete }: { id: string;
             ) : null}
           </Card>
 
-          <Notes enquiry={enquiry} viewer={viewer} canWrite={canWrite} onChange={setData} />
+          <NotesCard record={enquiry} apiBase={`/api/admin/enquiries/${enquiry.id}`} viewer={viewer} canWrite={canWrite} onChange={setData} placeholder="e.g. Called, sending quote for 200 helmets by Friday." />
 
-          <Card title="Activity">
-            <ol className="relative space-y-4 border-l border-border pl-5">
-              {[...enquiry.statusHistory].reverse().map((entry, i) => (
-                <li key={`${entry.at}-${i}`} className="relative text-sm">
-                  <span className={cx("absolute top-1 -left-[1.6rem] size-2.5 rounded-full ring-4 ring-surface-raised", i === 0 ? "bg-safety-500" : "bg-border")} />
-                  <p className="text-foreground">
-                    {entry.status === "new" && entry.by === "system" ? "Received from the website" : <>Marked <strong>{ENQUIRY_STATUS_LABELS[entry.status] ?? entry.status}</strong></>}
-                    {entry.by !== "system" ? <span className="text-muted"> by {entry.by}</span> : null}
-                  </p>
-                  <p className="text-xs text-muted">{formatDate(entry.at)}</p>
-                </li>
-              ))}
-            </ol>
-            {enquiry.firstResponseAt ? (
-              <p className="mt-4 text-xs text-muted">
-                First response after{" "}
-                {Math.max(1, Math.round((new Date(enquiry.firstResponseAt).getTime() - new Date(enquiry.createdAt).getTime()) / 60_000))} min.
-              </p>
-            ) : null}
-          </Card>
+          <ActivityCard history={enquiry.statusHistory} labels={ENQUIRY_STATUS_LABELS} createdAt={enquiry.createdAt} firstResponseAt={enquiry.firstResponseAt} />
         </div>
 
         <div className="space-y-6">
@@ -246,39 +227,9 @@ export function EnquiryDetail({ id, viewer, canWrite, canDelete }: { id: string;
             </div>
           </Card>
 
-          <Card title="Notifications">
-            <ul className="space-y-3 text-sm">
-              {(Object.keys(CHANNEL_LABELS) as (keyof typeof CHANNEL_LABELS)[]).map((channel) => {
-                const n = enquiry.notifications[channel];
-                return (
-                  <li key={channel} className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-foreground">{CHANNEL_LABELS[channel]}</p>
-                      <p className="text-xs text-muted">
-                        {n.sentAt ? `Sent ${timeAgo(n.sentAt)}` : n.status === "skipped" ? (channel === "customer" ? "No email given" : "Not configured") : n.attempts ? `${n.attempts} attempt${n.attempts === 1 ? "" : "s"}` : "Not sent yet"}
-                      </p>
-                      {n.lastError && n.status === "failed" ? <p className="mt-0.5 text-xs break-words text-red-600 dark:text-red-400">{n.lastError}</p> : null}
-                    </div>
-                    <DeliveryBadge status={n.status} />
-                  </li>
-                );
-              })}
-            </ul>
-            {canWrite ? <ResendButton id={enquiry.id} onDone={setData} /> : null}
-          </Card>
+          <NotificationsCard<Enquiry> notifications={enquiry.notifications} apiBase={`/api/admin/enquiries/${enquiry.id}`} canWrite={canWrite} onResent={setData} labels={CHANNEL_LABELS} />
 
-          {enquiry.spam.score > 0 ? (
-            <Card title="Spam check">
-              <p className="text-sm text-foreground">Score {enquiry.spam.score}</p>
-              <ul className="mt-2 flex flex-wrap gap-1">
-                {enquiry.spam.reasons.map((reason) => (
-                  <Badge key={reason} tone="amber">
-                    {reason}
-                  </Badge>
-                ))}
-              </ul>
-            </Card>
-          ) : null}
+          <SpamCard spam={enquiry.spam} />
 
           {canDelete ? (
             <Card title="Delete">
@@ -338,109 +289,3 @@ function TagEditor({ tags, disabled, busy, onSave }: { tags: string[]; disabled:
     </Field>
   );
 }
-
-function ResendButton({ id, onDone }: { id: string; onDone: (enquiry: Enquiry) => void }) {
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  return (
-    <Button
-      size="sm"
-      className="mt-4"
-      busy={busy}
-      onClick={async () => {
-        setBusy(true);
-        try {
-          onDone(await adminApi.post<Enquiry>(`/api/admin/enquiries/${id}/resend`, {}));
-          toast("Notifications re-sent.");
-        } catch (err) {
-          toast(errorMessage(err), "error");
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
-      <Send className="size-3.5" /> Resend notifications
-    </Button>
-  );
-}
-
-function Notes({ enquiry, viewer, canWrite, onChange }: { enquiry: Enquiry; viewer: { id: string; role: string }; canWrite: boolean; onChange: (enquiry: Enquiry) => void }) {
-  const toast = useToast();
-  const [body, setBody] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function add(event: FormEvent) {
-    event.preventDefault();
-    if (!body.trim()) return;
-    setBusy(true);
-    try {
-      onChange(await adminApi.post<Enquiry>(`/api/admin/enquiries/${enquiry.id}/notes`, { body: body.trim() }));
-      setBody("");
-      toast("Note added.");
-    } catch (err) {
-      toast(errorMessage(err), "error");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Card title={`Internal notes${enquiry.notes.length ? ` · ${enquiry.notes.length}` : ""}`}>
-      <p className="-mt-1 mb-4 text-xs text-muted">Only the team sees notes; customers tracking their enquiry never do.</p>
-      {enquiry.notes.length ? (
-        <ul className="mb-4 space-y-3">
-          {enquiry.notes.map((note) => (
-            <li key={note.id} className="rounded-lg border border-border p-3">
-              <div className="flex items-center justify-between gap-2 text-xs text-muted">
-                <span>
-                  <span className="font-medium text-foreground">{note.authorName}</span> · {formatDate(note.createdAt)}
-                </span>
-                {canWrite && (viewer.role === "admin" || note.authorId === viewer.id) ? (
-                  <ConfirmButton
-                    size="xs"
-                    variant="ghost"
-                    confirmLabel="Delete"
-                    prompt="Delete note?"
-                    onConfirm={async () => {
-                      try {
-                        onChange(await adminApi.del<Enquiry>(`/api/admin/enquiries/${enquiry.id}/notes/${note.id}`));
-                      } catch (err) {
-                        toast(errorMessage(err), "error");
-                      }
-                    }}
-                  >
-                    <Trash className="size-3.5" />
-                    <span className="sr-only">Delete note</span>
-                  </ConfirmButton>
-                ) : null}
-              </div>
-              <p className="mt-1.5 text-sm whitespace-pre-wrap text-foreground">{note.body}</p>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {canWrite ? (
-        <form onSubmit={add} className="space-y-2">
-          <label htmlFor="note" className="sr-only">
-            New note
-          </label>
-          <textarea
-            id="note"
-            rows={3}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            maxLength={2000}
-            placeholder="e.g. Called, sending quote for 200 helmets by Friday."
-            className={cx(inputClass, "resize-y")}
-          />
-          <div className="flex justify-end">
-            <Button type="submit" variant="brand" size="sm" busy={busy} disabled={!body.trim()}>
-              Add note
-            </Button>
-          </div>
-        </form>
-      ) : null}
-    </Card>
-  );
-}
-

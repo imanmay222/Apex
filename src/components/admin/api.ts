@@ -84,6 +84,17 @@ export function withQuery(path: string, query: Record<string, string | number | 
   return qs ? `${path}?${qs}` : path;
 }
 
+/**
+ * Mirrors list filters into the address bar (shareable URLs, sensible back button) without a
+ * navigation, so it can never cancel a link the user just clicked. Ignored once the user has left
+ * `pathname`.
+ */
+export function syncUrl(pathname: string, url: string) {
+  if (window.location.pathname !== pathname) return;
+  if (`${window.location.pathname}${window.location.search}` === url) return;
+  window.history.replaceState(null, "", url);
+}
+
 /* ------------------------------------------------------------------ */
 
 export interface Query<T> {

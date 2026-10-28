@@ -6,6 +6,7 @@ import { EnquiryFormWithOptions } from "@/components/enquiry-section";
 import { ArrowRight, Check, Download, Phone } from "@/components/icons";
 import { JsonLd } from "@/components/json-ld";
 import { PageHero } from "@/components/page-hero";
+import { AddToQuote } from "@/components/quote/add-to-quote";
 import { ButtonLink, Section, SectionHeading } from "@/components/ui";
 import {
   getProductBySlug,
@@ -98,9 +99,12 @@ export default async function ProductPage({ params }: Params) {
               </ul>
             ) : null}
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <ButtonLink href="#enquiry" size="lg">
-                Request a quote
+            <div className="mt-5">
+              <AddToQuote product={{ slug: product.slug, title: product.title, image: product.image.src }} />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <ButtonLink href="#enquiry" variant="outline">
+                Ask a question
                 <ArrowRight className="size-4" />
               </ButtonLink>
               {phone ? (

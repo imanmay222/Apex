@@ -1,6 +1,6 @@
 import { env } from "../config/env";
 import { connectDb } from "../db/connect";
-import { AnalyticsModel, EnquiryModel, type EventType } from "../db/models";
+import { AnalyticsModel, EnquiryModel, OrderModel, type EventType } from "../db/models";
 import { hmacHex } from "../lib/crypto";
 import { deviceClass, isLikelyBot } from "../lib/request";
 
@@ -104,7 +104,10 @@ export async function analyticsSummary(from: Date, to: Date) {
   const daily: { _id: Date; visitors: number; pageViews: number }[] = facets.daily;
   const visitors = daily.reduce((sum, d) => sum + d.visitors, 0);
 
-  const enquiries = await EnquiryModel.countDocuments({ createdAt: range.at, status: { $ne: "spam" } });
+  const [enquiries, orders] = await Promise.all([
+    EnquiryModel.countDocuments({ createdAt: range.at, status: { $ne: "spam" } }),
+    OrderModel.countDocuments({ createdAt: range.at, status: { $ne: "spam" } }),
+  ]);
 
   const named = (rows: { _id: string; count: number }[]) => rows.map((r) => ({ name: r._id, count: r.count }));
 
@@ -114,6 +117,7 @@ export async function analyticsSummary(from: Date, to: Date) {
       pageViews: totals.pageViews,
       visitors,
       enquiries,
+      orders,
       // Enquiries per 100 visitor-days; null rather than a misleading 0 when there's no traffic.
       conversionRate: visitors > 0 ? Math.round((enquiries / visitors) * 10_000) / 100 : null,
       catalogueDownloads: totals.catalogueDownloads,

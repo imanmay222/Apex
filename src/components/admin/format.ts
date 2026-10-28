@@ -56,6 +56,16 @@ export const ENQUIRY_STATUS_LABELS: Record<string, string> = {
   archived: "Archived",
 };
 
+export const ORDER_STATUS_LABELS: Record<string, string> = {
+  new: "New",
+  quoted: "Quote sent",
+  confirmed: "Confirmed",
+  dispatched: "Dispatched",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  spam: "Spam",
+};
+
 export const ENQUIRY_TYPE_LABELS: Record<string, string> = {
   products: "Product",
   survey: "Survey",

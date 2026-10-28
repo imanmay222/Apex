@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { cx } from "../ui";
 import { Close } from "../icons";
 import { Alert, ChevronLeft, ChevronRight } from "./icons";
-import { capitalize, ENQUIRY_STATUS_LABELS } from "./format";
+import { capitalize, ENQUIRY_STATUS_LABELS, ORDER_STATUS_LABELS } from "./format";
 import { btn, inputClass, type BtnSize, type BtnVariant } from "./styles";
 
 export { btn, inputClass, type BtnVariant };
@@ -183,6 +183,20 @@ const STATUS_TONES: Record<string, Tone> = {
 
 export function StatusBadge({ status }: { status: string }) {
   return <Badge tone={STATUS_TONES[status] ?? "gray"}>{ENQUIRY_STATUS_LABELS[status] ?? capitalize(status)}</Badge>;
+}
+
+const ORDER_STATUS_TONES: Record<string, Tone> = {
+  new: "orange",
+  quoted: "violet",
+  confirmed: "blue",
+  dispatched: "amber",
+  delivered: "green",
+  cancelled: "gray",
+  spam: "red",
+};
+
+export function OrderStatusBadge({ status }: { status: string }) {
+  return <Badge tone={ORDER_STATUS_TONES[status] ?? "gray"}>{ORDER_STATUS_LABELS[status] ?? capitalize(status)}</Badge>;
 }
 
 export function PriorityBadge({ priority }: { priority: string }) {

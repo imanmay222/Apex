@@ -4,6 +4,7 @@ import {
   EnquiryModel,
   GalleryModel,
   LogoModel,
+  OrderModel,
   ProductModel,
   SurveyModel,
   TestimonialModel,
@@ -12,7 +13,61 @@ import {
 
 const DAY = 86_400_000;
 
-export async function dashboardSnapshot() {
+/** Statuses where the team still owes the customer something. */
+const OPEN_ORDER_STATUSES = ["new", "quoted", "confirmed", "dispatched"];
+
+async function orderSnapshot(since: Date) {
+  const notSpam = { status: { $ne: "spam" as const } };
+  const [facets, recent] = await Promise.all([
+    OrderModel.aggregate([
+      {
+        $facet: {
+          byStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
+          byDay: [
+            { $match: { ...notSpam, createdAt: { $gte: since } } },
+            { $group: { _id: { $dateTrunc: { date: "$createdAt", unit: "day" } }, count: { $sum: 1 } } },
+          ],
+          unassignedOpen: [{ $match: { status: { $in: OPEN_ORDER_STATUSES }, assignedTo: { $exists: false } } }, { $count: "count" }],
+          topProducts: [
+            { $match: notSpam },
+            { $unwind: "$items" },
+            { $group: { _id: "$items.productTitle", count: { $sum: "$items.quantity" } } },
+            { $sort: { count: -1, _id: 1 } },
+            { $limit: 5 },
+          ],
+        },
+      },
+    ]),
+    OrderModel.find(notSpam).sort({ createdAt: -1 }).limit(5).select("reference name company items status createdAt").lean(),
+  ]);
+
+  const f = facets[0];
+  const byStatus: Record<string, number> = Object.fromEntries(f.byStatus.map((r: { _id: string; count: number }) => [r._id, r.count]));
+  const byDay = new Map<string, number>(f.byDay.map((r: { _id: Date; count: number }) => [r._id.toISOString().slice(0, 10), r.count]));
+
+  return {
+    byStatus,
+    open: OPEN_ORDER_STATUSES.reduce((sum, status) => sum + (byStatus[status] ?? 0), 0),
+    unassignedOpen: f.unassignedOpen[0]?.count ?? 0,
+    last14Days: Array.from({ length: 14 }, (_, i) => {
+      const date = new Date(Date.now() - (13 - i) * DAY).toISOString().slice(0, 10);
+      return { date, count: byDay.get(date) ?? 0 };
+    }),
+    topProducts: f.topProducts.map((r: { _id: string; count: number }) => ({ name: r._id, count: r.count })),
+    recent: recent.map((r) => ({
+      id: String(r._id),
+      reference: r.reference,
+      name: r.name,
+      company: r.company ?? null,
+      items: r.items.length,
+      units: r.items.reduce((sum, item) => sum + item.quantity, 0),
+      status: r.status,
+      createdAt: (r.createdAt ?? new Date()).toISOString(),
+    })),
+  };
+}
+
+export async function dashboardSnapshot(opts: { includeOrders?: boolean } = {}) {
   await connectDb();
   const since = new Date(Date.now() - 14 * DAY);
   const notSpam = { status: { $ne: "spam" as const } };
@@ -52,6 +107,7 @@ export async function dashboardSnapshot() {
     EnquiryModel.find(notSpam).sort({ createdAt: -1 }).limit(5).select("reference name type subjectTitle status createdAt").lean(),
     AdminUserModel.countDocuments({ active: true }),
   ]);
+  const orders = opts.includeOrders ? await orderSnapshot(since) : null;
 
   const f = enquiryFacets[0];
   const counts = (rows: { _id: string; count: number }[]) => Object.fromEntries(rows.map((r) => [r._id, r.count]));
@@ -86,6 +142,7 @@ export async function dashboardSnapshot() {
         createdAt: r.createdAt.toISOString(),
       })),
     },
+    orders,
     activeUsers: users,
   };
 }

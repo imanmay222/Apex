@@ -12,6 +12,7 @@ const companyLinks = [
   { href: "/survey", label: "Surveys" },
   { href: "/training", label: "Training & Demos" },
   { href: "/contact", label: "Contact us" },
+  { href: "/quote/track", label: "Track your order" },
 ];
 
 export async function SiteFooter() {

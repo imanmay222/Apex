@@ -11,7 +11,7 @@ import { inlineInputClass } from "./styles";
 type Row = { name: string; count: number };
 type Summary = {
   range: { from: string; to: string };
-  totals: { pageViews: number; visitors: number; enquiries: number; conversionRate: number | null; catalogueDownloads: number; ctaClicks: number; searches: number };
+  totals: { pageViews: number; visitors: number; enquiries: number; orders: number; conversionRate: number | null; catalogueDownloads: number; ctaClicks: number; searches: number };
   timeseries: { date: string; visitors: number; pageViews: number }[];
   topPages: Row[];
   topProducts: Row[];
@@ -22,7 +22,7 @@ type Summary = {
   referrers: Row[];
 };
 
-const CTA_LABELS: Record<string, string> = { call: "Phone calls", whatsapp: "WhatsApp", email: "Email links", map: "Map / directions", products: "Products (mobile bar)" };
+const CTA_LABELS: Record<string, string> = { call: "Phone calls", whatsapp: "WhatsApp", email: "Email links", map: "Map / directions", products: "Products (mobile bar)", quote: "Quote basket (mobile bar)" };
 
 /** Fills days with no events so the chart shows gaps as zero, not as missing bars. */
 function fillDays(series: Summary["timeseries"], from: string, to: string) {
@@ -86,7 +86,7 @@ export function Analytics() {
         <Loading />
       ) : (
         <div className={cx("space-y-6", loading && "opacity-60")}>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <StatTile label="Visitors" value={formatNumber(data.totals.visitors)} hint="Unique per day, summed" />
             <StatTile label="Page views" value={formatNumber(data.totals.pageViews)} />
             <StatTile
@@ -95,6 +95,7 @@ export function Analytics() {
               hint={data.totals.conversionRate === null ? "No traffic yet" : `${data.totals.conversionRate}% of visitors`}
               href="/admin/enquiries"
             />
+            <StatTile label="Quote orders" value={formatNumber(data.totals.orders)} hint="Baskets sent from the website" href="/admin/orders" />
             <StatTile label="Catalogue downloads" value={formatNumber(data.totals.catalogueDownloads)} />
           </div>
 

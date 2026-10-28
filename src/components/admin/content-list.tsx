@@ -3,11 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- items are heterogeneous content records */
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Icon, Search } from "../icons";
 import { cx } from "../ui";
-import { adminApi, errorMessage, useAdminQuery, withQuery } from "./api";
+import { adminApi, errorMessage, syncUrl, useAdminQuery, withQuery } from "./api";
 import { resourceConfig, type ResourceConfig } from "./content-config";
 import { Thumb } from "./fields";
 import { formatDate, timeAgo } from "./format";
@@ -19,7 +18,6 @@ type Group = { key: string; title: string };
 
 export function ContentList({ resource, initialView }: { resource: string; initialView?: string }) {
   const config = resourceConfig(resource)!;
-  const router = useRouter();
   const toast = useToast();
   const isTestimonials = resource === "testimonials";
 
@@ -47,8 +45,8 @@ export function ContentList({ resource, initialView }: { resource: string; initi
 
   const { selected, setSelected, toggle } = useSelection(path);
   useEffect(() => {
-    if (isTestimonials) router.replace(view === "pending" ? `/admin/content/testimonials?view=pending` : `/admin/content/testimonials`, { scroll: false });
-  }, [view, isTestimonials, router]);
+    if (isTestimonials) syncUrl("/admin/content/testimonials", view === "pending" ? "/admin/content/testimonials?view=pending" : "/admin/content/testimonials");
+  }, [view, isTestimonials]);
 
   const rows = data ?? [];
   const allChecked = rows.length > 0 && rows.every((r) => selected.has(r.id));

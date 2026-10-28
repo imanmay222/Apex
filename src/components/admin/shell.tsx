@@ -11,6 +11,7 @@ import { Close, Menu, Mail } from "../icons";
 import { adminRequest } from "./api";
 import { ROLE_LABELS } from "./format";
 import { BarChart, Database, ExternalLink, History, ImageIcon, Inbox, LayoutGrid, LogOut, MessageSquare, Package, Settings, User, UserCog } from "./icons";
+import { ShoppingBag } from "../icons";
 import { Count, ToastProvider } from "./ui";
 
 type NavItem = {
@@ -18,7 +19,7 @@ type NavItem = {
   label: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   permission?: Permission;
-  badge?: "newEnquiries" | "pendingReviews";
+  badge?: "newEnquiries" | "newOrders" | "pendingReviews";
   exact?: boolean;
 };
 
@@ -26,6 +27,7 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
   {
     items: [
       { href: "/admin", label: "Dashboard", icon: LayoutGrid, exact: true },
+      { href: "/admin/orders", label: "Orders", icon: ShoppingBag, permission: "orders:read", badge: "newOrders" },
       { href: "/admin/enquiries", label: "Enquiries", icon: Inbox, permission: "enquiries:read", badge: "newEnquiries" },
     ],
   },
@@ -55,7 +57,7 @@ const NAV: { heading?: string; items: NavItem[] }[] = [
   },
 ];
 
-type Badges = { newEnquiries?: number; pendingReviews?: number };
+type Badges = { newEnquiries?: number; newOrders?: number; pendingReviews?: number };
 
 /** Live counts for the sidebar, refreshed on every navigation. */
 function useBadges(viewer: AdminViewer, pathname: string): Badges {
@@ -66,9 +68,10 @@ function useBadges(viewer: AdminViewer, pathname: string): Badges {
       adminRequest<unknown[]>(path, { signal: controller.signal }).then((r) => Number(r.meta?.total ?? 0)).catch(() => undefined);
     Promise.all([
       viewer.permissions.includes("enquiries:read") ? total("/api/admin/enquiries?status=new&limit=1") : undefined,
+      viewer.permissions.includes("orders:read") ? total("/api/admin/orders?status=new&limit=1") : undefined,
       viewer.permissions.includes("content:write") ? total("/api/admin/content/testimonials?source=public&published=false&limit=1") : undefined,
-    ]).then(([newEnquiries, pendingReviews]) => {
-      if (!controller.signal.aborted) setBadges({ newEnquiries, pendingReviews });
+    ]).then(([newEnquiries, newOrders, pendingReviews]) => {
+      if (!controller.signal.aborted) setBadges({ newEnquiries, newOrders, pendingReviews });
     });
     return () => controller.abort();
   }, [viewer, pathname]);
@@ -88,7 +91,7 @@ export function AdminShell({ viewer, companyName, children }: { viewer: AdminVie
   return (
     <ToastProvider>
       <div className="flex min-h-dvh bg-surface">
-        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 border-r border-border bg-background lg:block">{sidebar}</aside>
+        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 border-r border-border bg-background lg:block print:hidden">{sidebar}</aside>
 
         {/* Mobile drawer */}
         <div className={cx("fixed inset-0 z-50 lg:hidden", open ? "pointer-events-auto" : "pointer-events-none")} aria-hidden={!open}>
@@ -105,7 +108,7 @@ export function AdminShell({ viewer, companyName, children }: { viewer: AdminVie
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur lg:hidden">
+          <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur lg:hidden print:hidden">
             <button type="button" onClick={() => setOpen(true)} className="inline-flex size-9 items-center justify-center rounded-lg border border-border" aria-label="Open menu" aria-expanded={open}>
               <Menu className="size-5" />
             </button>

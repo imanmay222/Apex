@@ -21,6 +21,34 @@ export function Base({ children, ...props }: IconProps & { children: React.React
 
 /* ---- navigation / ui ---- */
 
+export const ShoppingBag = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+    <path d="M3 6h18" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </Base>
+);
+
+export const Plus = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Base>
+);
+
+export const Minus = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M5 12h14" />
+  </Base>
+);
+
+export const Trash = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </Base>
+);
+
 export const Menu = (p: IconProps) => (
   <Base {...p}>
     <path d="M4 6h16M4 12h16M4 18h16" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSiteSettings } from "@/server/data/public";
 import { MapPin, Phone, Search, WhatsApp } from "./icons";
+import { BasketAction } from "./quote/basket-link";
 
 /** Fixed quick-actions bar on small screens. Clicks are counted via `data-track`. */
 export async function MobileActionBar() {
@@ -25,7 +26,7 @@ export async function MobileActionBar() {
         aria-label="Quick actions"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
       >
-        <ul className="grid grid-cols-4">
+        <ul className="grid grid-cols-5">
           {actions.map((action) => (
             <li key={action.label}>
               {action.external ? (
@@ -41,6 +42,9 @@ export async function MobileActionBar() {
               )}
             </li>
           ))}
+          <li>
+            <BasketAction className={itemClass} />
+          </li>
         </ul>
       </nav>
     </>
